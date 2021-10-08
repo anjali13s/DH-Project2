@@ -1,18 +1,18 @@
 
-##Importing csv 
+## Importing csv 
 
 ```{r import}
 library(tidyverse)
-doyle_import <- read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Doyle_corpus.csv")
-wells_import <-  read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Wells_corpus.csv")
-eliot_import <- read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Eliot_corpus.csv")
-hardy_import <- read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Hardy_corpus.csv")
+doyle_import <- read_csv("csv files/Doyle_corpus.csv")
+wells_import <-  read_csv("csv files/Wells_corpus.csv")
+eliot_import <- read_csv("csv files/Eliot_corpus.csv")
+hardy_import <- read_csv("csv files/Hardy_corpus.csv")
 ```
 
 ## Modelling Data
 
-### Adding Gender
-Now that we have our data in place, we can start adding complexity to the data model. We can start by simply separating these authors by gender. Since, Lovecraft, Hodgson, and Kornbluth are all men, we can club them together.
+### Adding Genre
+
 
 ```{r scifi_authors}
 scifi_authors <- bind_rows(doyle_import,wells_import)
