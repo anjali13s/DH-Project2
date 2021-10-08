@@ -1,8 +1,13 @@
 
 ## Importing csv 
 
-```{r import}
+```{r load_libraries}
+library(tidytext)
 library(tidyverse)
+
+```
+
+```{r import}
 doyle_import <- read_csv("csv files/Doyle_corpus.csv")
 wells_import <-  read_csv("csv files/Wells_corpus.csv")
 eliot_import <- read_csv("csv files/Eliot_corpus.csv")
