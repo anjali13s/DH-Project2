@@ -1,0 +1,93 @@
+
+##Importing csv 
+
+```{r import}
+library(tidyverse)
+doyle_import <- read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Doyle_corpus.csv")
+wells_import <-  read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Wells_corpus.csv")
+eliot_import <- read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Eliot_corpus.csv")
+hardy_import <- read_csv("C:/Users/User/Desktop/Ashoka 5th sem/DH project 2/csv corpus/Hardy_corpus.csv")
+```
+
+## Modelling Data
+
+### Adding Gender
+Now that we have our data in place, we can start adding complexity to the data model. We can start by simply separating these authors by gender. Since, Lovecraft, Hodgson, and Kornbluth are all men, we can club them together.
+
+```{r scifi_authors}
+scifi_authors <- bind_rows(doyle_import,wells_import)
+```
+
+Grouping data together by variable name is not a very smart way to go about it, we want to add the attribute to the the data itself. We can do so by creating a new column through `mutate`.
+
+```{r scifi_column}
+scifi_authors <- scifi_authors %>% 
+                mutate(genre ="sci-fi")
+```
+
+Again, in `tidy` these need not be separate steps. Write the code to create a set of female authors that has the same format as the male authors.
+
+```{r non_scifi_authors}
+non_scifi_authors <-bind_rows(eliot_import,hardy_import) %>% 
+                 mutate(genre= "non sci-fi")
+
+
+```
+
+We can then bind both tables together.
+
+```{r all_authors}
+all_authors <- bind_rows(scifi_authors, non_scifi_authors)
+```
+
+### Tidying the Text
+
+```{r tidy_all_authors}
+
+tidy_all_authors <- all_authors %>% 
+                    unnest_tokens(word, text) %>% 
+                    anti_join(stop_words)
+```
+
+### Creating operationalizing romance
+
+Now that we have our corpus in place, we can do some more "feature engineering" by marking each time one of our two operational concepts occurs: romance and technology.
+
+We can create two separate lexicons and join them to the table.
+
+```{r adding_romance}
+romance_words <- c("love","romance", "romantic", "desire", "relationship", "couple")
+
+romance_df <- data_frame(word = romance_words, romance = TRUE)
+
+technology_words <- c("science", "technology", "rational", "rationality","thinking","progress")
+
+technology_df <- data_frame(word = technology_words, technology = TRUE)
+```
+
+We can add these words by using a left_join. A left join will keep everything on left hand side 
+
+```{r tagged_words}
+all_authors_tagged <- tidy_all_authors %>% 
+                                left_join(romance_df) %>% 
+                                left_join(technology_df)
+
+
+```
+
+We can then establish some basic percentages for the use of each word.
+
+```{r calculate_words}
+all_authors_table <- all_authors_tagged %>% 
+                     group_by(gender) %>% 
+                     count(romance, technology) %>% 
+                     mutate (percent = n/sum(n)*100)
+```
+
+## Incorporating Sentiment Analysis
+
+This is all good and well, but we want to get an idea of how these particular words are being used by capturing the sentiment around them. Theoretically, how would we go about doing that?
+
+
+
+
