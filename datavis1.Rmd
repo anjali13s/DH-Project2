@@ -1,0 +1,59 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(ggthemes)
+```
+
+# Relative frequency - Upper Class
+```{r}
+all_authors_frequency <- all_authors_tagged %>%
+  group_by(title) %>%
+  add_count(name = "length") %>%
+  mutate(upper_class_count = sum(upper_class , na.rm = TRUE)) %>%
+  mutate(rfreqUC = upper_class_count / length) %>%
+  mutate(lower_class_count = sum(lower_class , na.rm = TRUE)) %>%
+  mutate(rfreqLC = lower_class_count / length) %>%
+  select(genre , author , title , rfreqUC , rfreqLC) %>%
+  distinct()
+```
+
+```{r}
+all_authors_frequency %>%
+  ggplot(aes(rfreqUC)) +
+  geom_histogram()
+
+all_authors_frequency %>%
+  ggplot(aes(rfreqLC)) +
+  geom_histogram()
+```
+
+```{r}
+all_authors_frequency %>%
+  ggplot(aes(rfreqUC , fill = genre))  +
+  geom_histogram()
+
+all_authors_frequency %>%
+  ggplot(aes(rfreqLC , fill = genre)) +
+  geom_histogram()
+```
+```{r}
+all_authors_frequency %>%
+  ggplot(aes(rfreqUC, fill = genre)) +
+  geom_histogram(color = "black",
+                 alpha = .5,
+                 position = "identity") +
+  facet_wrap(~genre) + 
+  theme_economist()
+
+all_authors_frequency %>%
+  ggplot(aes(rfreqLC, fill = genre)) +
+  geom_histogram(color = "black",
+                 alpha = .5,
+                 position = "identity") +
+  facet_wrap(~genre) + 
+  theme_economist()
+
+```
