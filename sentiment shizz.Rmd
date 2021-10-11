@@ -10,7 +10,7 @@ all_authors$text[300:310]
 ```{r}
 all_authors_sentence <- all_authors %>%
   group_by(author, genre , title , text) %>%
-  summarise (text = paste(text, collapse = "")) %>%
+  summarise (text = paste(text)) %>%
   unnest_regex(sentences, text, pattern = "[.?!]", to_lower = FALSE)  
 ```
 
