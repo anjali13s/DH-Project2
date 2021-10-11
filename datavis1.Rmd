@@ -44,12 +44,13 @@ all_authors_frequency %>%
 ```
 ```{r}
 all_authors_frequency %>%
-  ggplot(aes(rfreqUC, fill = genre)) +
+  ggplot(aes(rfreqUC, fill = genre)) + 
   geom_histogram(color = "black",
                  alpha = .5,
                  position = "identity") +
-  facet_wrap(~genre) + 
-  theme_wsj()
+  facet_wrap(~genre) +
+   labs(y = "count" , x = "Relative Frequency") +
+  theme_solarized()
 
 all_authors_frequency %>%
   ggplot(aes(rfreqLC, fill = genre)) +
@@ -57,6 +58,7 @@ all_authors_frequency %>%
                  alpha = .5,
                  position = "identity") +
   facet_wrap(~genre) + 
-  theme_wsj()
+  labs(y = "count" , x = "Relative Frequency") +
+  theme_solarized()
 
 ```
