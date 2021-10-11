@@ -1,0 +1,147 @@
+## Installing libraries
+
+```{r echo=TRUE, results='hide', message=FALSE}
+
+#Tidy data manipulation
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(tidytext)
+library(readr)
+library(stringi)
+library(textclean)
+
+
+#Helper library
+library(sqldf)
+
+#Graphics library
+library(ggiraphExtra)
+library(ggplot2)
+library(RColorBrewer)
+library(scales)
+```
+
+## Importing csv
+
+```{r import}
+doyle_import <- read_csv("csv files/Doyle_corpus.csv")
+wells_import <-  read_csv("csv files/Wells_corpus.csv")
+eliot_import <- read_csv("csv files/Eliot_corpus.csv")
+hardy_import <- read_csv("csv files/Hardy_corpus.csv")
+```
+
+## Cleaning csv
+
+```{r pre_clean_corpus}
+
+doyle_clean <- doyle_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+
+wells_clean <- wells_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+
+eliot_clean <- eliot_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+
+hardy_clean <- hardy_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+```
+
+### Adding Genre
+Now that we have our data in place, we can start adding complexity to the data model. We can start by simply separating these authors by gender. Since, Lovecraft, Hodgson, and Kornbluth are all men, we can club them together.
+
+```{r scifi_authors}
+scifi_authors <- bind_rows(doyle_clean,wells_clean)
+```
+
+Grouping data together by variable name is not a very smart way to go about it, we want to add the attribute to the the data itself. We can do so by creating a new column through `mutate`.
+
+```{r scifi_column}
+scifi_authors <- scifi_authors %>% 
+                mutate(genre ="sci-fi")
+```
+
+Again, in `tidy` these need not be separate steps. Write the code to create a set of female authors that has the same format as the male authors.
+
+```{r non_scifi_authors}
+non_scifi_authors <-bind_rows(eliot_clean,hardy_clean) %>% 
+                 mutate(genre= "non sci-fi")
+
+
+```
+
+We can then bind both tables together.
+
+```{r all_authors}
+all_authors <- bind_rows(scifi_authors, non_scifi_authors)
+```
+
+### Tidying the Text
+
+```{r tidy_all_authors}
+
+tidy_all_authors <- all_authors %>% 
+                    unnest_tokens(word, text) %>% 
+                    anti_join(stop_words)
+```
+
+
+### Creating operationalizing class
+
+
+```{r adding_class}
+upper_class_words <- c("king", "bourgeoisie", "wealthy", "rich", "noble", "aristocratic", "elite", "well-off", "blue-blood", "imperial", "posh", "upmarket", "exclusive", "high society", "privileged", "gentry", "mansion" , "prince" , "lady" , "queen" , "sir" , "madam" , "ma'am" )
+
+upper_class_df <- data_frame(word = upper_class_words, upper_class = TRUE)
+
+lower_class_words <- c("village", "poor", "beggar", "penniless", "poverty", "broke", "destitute", "bankrupt", "empty-handed", "needy" )
+
+lower_class_df <- data_frame(word = lower_class_words, lower_class = TRUE)
+
+technology_words <- c("science", "technology", "rational", "rationality","thinking","progress")
+
+technology_df <- data_frame(word = technology_words, technology = TRUE)
+```
+
+We can add these words by using a left_join. A left join will keep everything on left hand side 
+
+```{r tagged_words}
+all_authors_tagged <- tidy_all_authors %>% 
+                                left_join(upper_class_df) %>% 
+                                left_join(lower_class_df) %>% 
+                                left_join(technology_df)
+
+
+```
+
+We can then establish some basic percentages for the use of each word.
+
+```{r calculate_words}
+all_authors_table <- all_authors_tagged %>% 
+                     group_by(genre) %>% 
+                     count(upper_class, lower_class, technology) %>% 
+                     mutate (percent = n/sum(n)*100)
+```
+
+
