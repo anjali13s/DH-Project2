@@ -1,0 +1,72 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+all_authors$text[300:310]
+```
+
+```{r}
+all_authors_sentence <- all_authors %>%
+  group_by(author, genre , title , text) %>%
+  summarise (text = paste(text, collapse = "")) %>%
+  unnest_regex(sentences, text, pattern = "[.?!]", to_lower = FALSE)  
+```
+
+```{r}
+author_sentence_nr <- all_authors_sentence %>%
+  ungroup() %>%
+  mutate(sentence_number = row_number()) %>%
+  group_by(author, genre , title , sentence_number) %>%
+  unnest_tokens(word, sentences) %>%
+  anti_join(stop_words)
+```
+
+```{r}
+author_concept <-  author_sentence_nr %>%
+  left_join(upper_class_df) %>%
+  left_join(lower_class_df) 
+```
+
+```{r}
+author_concept_sentiment <- author_concept %>%
+  inner_join(get_sentiments("bing"))
+```
+
+```{r}
+author_sentiment_total <- author_concept_sentiment %>%
+  count(sentence_number, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0)  %>%
+  mutate(sentiment = positive - negative) %>%
+  left_join(author_concept) %>%
+  filter(upper_class == TRUE | lower_class == TRUE)
+```
+
+```{r}
+author_sentiment_table <- author_sentiment_total %>%
+  pivot_longer(upper_class:lower_class,
+               names_to = "concept",
+               values_to = "total_sentiment")  %>%
+  drop_na() %>%
+  group_by(genre, author, concept) %>%
+  summarise (total = sum(sentiment)) %>%
+  ungroup()
+```
+
+```{r}
+author_sentiment_table %>%
+  ggplot(aes(author, y = total, fill = genre)) +
+  geom_col(color = "black",
+           alpha = .7,
+           position = "identity") +
+  facet_wrap(~ concept) +
+  labs(title = "Positive and Negative Sentiment by Terms",
+       x = "Overal Sentiment",
+       y = "Author",
+       fill = "Genre") +
+  coord_flip() 
+```
+
