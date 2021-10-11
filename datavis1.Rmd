@@ -49,7 +49,7 @@ all_authors_frequency %>%
                  alpha = .5,
                  position = "identity") +
   facet_wrap(~genre) +
-   labs(y = "count" , x = "Relative Frequency") +
+   labs(title = "Upper Class Terms" , y = "count" , x = "Relative Frequency") +
   theme_solarized()
 
 all_authors_frequency %>%
@@ -58,7 +58,7 @@ all_authors_frequency %>%
                  alpha = .5,
                  position = "identity") +
   facet_wrap(~genre) + 
-  labs(y = "count" , x = "Relative Frequency") +
+  labs(title = "Lower Class Terms" , y = "count" , x = "Relative Frequency") +
   theme_solarized()
 
 ```
