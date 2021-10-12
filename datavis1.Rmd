@@ -3,6 +3,14 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+# Data Visualisation 1 - Relative Freqeucny Histogram
+
+## Why relative frequqncy?
+
+Our hypothesis deals with finding out whether there exists a difference in the  usage of upper class terms and lower class terms within a corpus of science fiction novels as comapred to non science fiction novels.
+
+
+
 ```{r}
 library(ggthemes)
 library(dplyr)
@@ -10,7 +18,9 @@ library(ggplot2)
 
 ```
 
-# Relative frequency - Upper Class
+
+The simplest way to understand the difference in usage of these terms is to just calculate the relative frequency in which these terms are occurring within a particular novel. Relative frequency gives us a solid idea about the difference in usage of these terms in terms of the relative quantity in which these terms occur throughout our corpus.
+
 ```{r}
 all_authors_frequency <- all_authors_tagged %>%
   group_by(title) %>%
@@ -23,6 +33,8 @@ all_authors_frequency <- all_authors_tagged %>%
   distinct()
 ```
 
+The value of the relative frequency of these terms is a continuous variable and so a histogram has been used to graphically represent the relative usage of these terms. The x axis of the histogram denotes the value of rwelative frequqncy of the usage of a particular term group and the y axis indicates the count or the number of novels in which that relative frequency value occurs.
+
 ```{r}
 all_authors_frequency %>%
   ggplot(aes(rfreqUC)) +
@@ -32,6 +44,13 @@ all_authors_frequency %>%
   ggplot(aes(rfreqLC)) +
   geom_histogram()
 ```
+## Some Problems with using a histogram
+
+The x axis represents the value of relative frequency, which means that the relative frequency value invcreases the further right you move along the x axis.
+
+As compared to a normal distribution, we will instead witness a leftward skewed hosotgram with a long tail. we can just use some basic logic to understand why this happens:
+A higher relative frequency in most cases would yeild to a lower count, this is because if we just think about it, it is much much easier to find a higher number of lower relative frequency in a corpus simply because a lower relative frwequqncy means a weaker relation and a weak relation is much more easier to occur than a stronger relation in the case of a high relative frequqncy (i dont know if this made any sense, but it majkes sense to me) .
+Therfore, we will almost always see the graph to be skewed to the left and having a long short tail (if any)
 
 ```{r}
 all_authors_frequency %>%
@@ -62,3 +81,21 @@ all_authors_frequency %>%
   theme_solarized()
 
 ```
+## Some Observations
+
+Upon first glance it is really easy to notice that the non science fiction corpus when searched for terms relating to the upper class shows the majority of the texts conforming to a low relative frequency. When looking at the science fiction corpus, we can see that apart from the leftward skewed peak, it has a long tail wherein we see multiple texts where a higher relative frequency is matched for the upper class terms. Based on just this we can infer that the texts in our scienc fiction corpus use terms relating to the upper class relatively more than the texts in the non science fiction corpus.
+
+Things are not so clear when we look at the graph showing the relative frequency of usage of upper class terms in both the corpora. In the non science fiction corpus, we see a very balancede and normal distribution among all the texts, suggesting that the lower class terms play a consistent role throughout the texts in this corpus.
+
+At first glance, the science fiction corpus seems to be very similar ( in terms of normal distribution of terms ) and suggests that there is once agaihn a consistent usage of lower class terms in the texts, however isnt must to infer out of this.
+
+But wait, there's more!
+
+Look at the scales in both the graphs in particular the values along the x axis the values along the x axis in the lower class graph a very small as compared to the values in the upper class graph. 
+
+What doe this mean?
+
+This simply means that there exists a higher absolute number of upper class terms as compared to lower class terms in both the corpora. 
+And with this we can conclude that the usage of upper class terms is relatively more frequent in science fiction texts as comapred to the non science fiction  texts, however when it comes to the usage of lower class terms, the absolute number of the occurrences of these terms is relatively fewer yet consistent throughout both the corpora.
+
+
