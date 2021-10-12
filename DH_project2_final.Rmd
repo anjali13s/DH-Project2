@@ -5,7 +5,10 @@ output:
   html_notebook:
     toc: true
     toc_depth: 7 
+    df_print: paged
 ---
+![](https://www.ashoka.edu.in/admin_assets/global/images/logo/logo-ashoka.png)
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message = FALSE)
 
