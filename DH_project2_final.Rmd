@@ -1,5 +1,5 @@
 ---
-title: "Assignment 2 R You Having Fun"
+title: "Class and Sci-fi Through Some Hi-fi Tools"
 author: Anjali Sajith, Harieshwar Vetri, Mantegh Anand
 output:
   html_notebook:
