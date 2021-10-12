@@ -1,0 +1,338 @@
+---
+title: "Assignment 2 R You Having Fun"
+author: Anjali Sajith, Harieshwar Vetri, Mantegh Anand
+output:
+  html_notebook:
+    toc: true
+    toc_depth: 7 
+---
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE)
+
+```
+# Hypothesis:
+
+There exists a class difference in science fiction books wherein there is a higher frequency of usage of words relating to the upper-class as compared to the lower-class.
+
+
+# Introduction:
+
+Fiction was a subject that flourished in the 17th and 18th century. Authors such as H. G. Wells, Sir Arthur Conan Doyle, George Eliot and Thomas Hardy wrote such works as ‘War of the Worlds’, the Sherlock Holmes books, ‘The Mill on the Floss’ and ‘Tess of the d’Ubervilles’.
+
+Fiction also tends to reflect on the current affairs of the author’s world as well. One aspect of society that the authors mentioned above would most certainly have come across was class.
+We intend to search through the works of the above authors for mentions of class and to visualize the different sentiments relating to it. We will also be dividing the work based on genre. The corpus we are using contains 50 books, 33 of which are the science-fiction works of Wells and Doyle and the remaining 17 are the non sci-fi works of Eliot and Hardy. In total the corpus comes to over 5 million words.
+
+
+# Cleaning and Modelling Data
+
+The foundation of any sort of analysis starts with the initial data we have and having uniform datasets without unnecessary things that will skew our analysis is the most important part. Our base data were pre-cleaned corpora containing text files that we used for project 1. Redoing the entire downloading process from Gutenberg was something we really did not want to do, so we took the easy way out and decided to convert these text files into csv files, grouped by authors. For this step, instead of using R codes, the data querying tool in Excel was used to make the magic happen. Each folder filled with text files were loaded in, some tweaking and playing around was done and voilà, we've got our data in clean csv files with 3 colums - title, author and text.
+
+   
+### Installing libraries
+
+```{r echo=TRUE, results='hide', message=FALSE}
+#Tidy data manipulation
+library(stringr)
+library(dplyr)
+library(tidyr)
+library(tidytext)
+library(readr)
+library(stringi)
+library(textclean)
+#Helper library
+library(sqldf)
+#Graphics library
+library(ggiraphExtra)
+library(ggplot2)
+library(RColorBrewer)
+library(scales)
+```
+
+### Importing csv
+
+```{r import}
+doyle_import <- read_csv("csv files/Doyle_corpus.csv")
+wells_import <-  read_csv("csv files/Wells_corpus.csv")
+eliot_import <- read_csv("csv files/Eliot_corpus.csv")
+hardy_import <- read_csv("csv files/Hardy_corpus.csv")
+```
+
+### Cleaning csv
+
+The next step was to remove unnecessary characters. This was done by the str_replace_all command and any texts other than alphanumeric characters were removed. We still found some extra characters such as 'â' and 'œ' (a tiny issue that comes with the usage of Excel and its tendency to change unknown characters into even more absurd characters) and they were promptly removed as well. These texts were now imported into a new file.
+
+```{r pre_clean_corpus}
+doyle_clean <- doyle_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+wells_clean <- wells_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+eliot_clean <- eliot_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+hardy_clean <- hardy_import %>%
+  filter(text != "") %>%
+  mutate(text = str_replace_all(text, "[^[:alnum:]]", " ")) %>%
+  mutate(text = str_replace_all(text, "â", " ")) %>%
+  mutate(text = str_replace_all(text, "œ", " ")) %>%
+  mutate(text = replace_contraction(text)) %>%
+  mutate(text = replace_curly_quote(text))
+```
+
+### Adding Genre
+Then came the part where we had to add in the differentitation between science fiction and non science fiction. Wells' and Doyle's texts were added into one file whereas Eliot's and Hardy's were added into another.
+
+```{r scifi_authors}
+scifi_authors <- bind_rows(doyle_clean,wells_clean)
+```
+
+```{r scifi_column}
+scifi_authors <- scifi_authors %>% 
+                mutate(genre ="sci-fi")
+```
+
+```{r non_scifi_authors}
+non_scifi_authors <-bind_rows(eliot_clean,hardy_clean) %>% 
+                 mutate(genre= "non sci-fi")
+```
+
+```{r all_authors}
+all_authors <- bind_rows(scifi_authors, non_scifi_authors)
+```
+
+### Tidying the Text
+
+```{r tidy_all_authors}
+tidy_all_authors <- all_authors %>% 
+                    unnest_tokens(word, text) %>% 
+                    anti_join(stop_words)
+```
+
+
+### Creating operationalizing class
+Then we operationalized class by adding in words relating to upper class and lower class. With that we were able to effectively clean and model the data to fit into our hypothesis
+
+
+```{r adding_class}
+upper_class_words <- c("king", "bourgeoisie", "wealthy", "rich", "noble", "aristocratic", "elite", "well-off", "blue-blood", "imperial", "posh", "upmarket", "exclusive", "high society", "privileged", "gentry", "mansion")
+upper_class_df <- data_frame(word = upper_class_words, upper_class = TRUE)
+lower_class_words <- c("village", "poor", "beggar", "penniless", "poverty", "broke", "destitute", "bankrupt", "empty-handed", "needy")
+lower_class_df <- data_frame(word = lower_class_words, lower_class = TRUE)
+```
+
+```{r tagged_words}
+all_authors_tagged <- tidy_all_authors %>% 
+                                left_join(upper_class_df) %>% 
+                                left_join(lower_class_df)
+              
+```
+
+
+```{r calculate_words}
+all_authors_table <- all_authors_tagged %>% 
+                     group_by(genre) %>% 
+                     count(upper_class, lower_class) %>% 
+                     mutate (percent = n/sum(n)*100)
+```
+
+# Data Visualisation 1 - Relative Freqeucny Histogram
+
+## Why relative frequqncy?
+
+Our hypothesis deals with finding out whether there exists a difference in the usage of upper-class terms and lower-class terms within a corpus of science fiction novels as compared to non science fiction novels.
+
+
+```{r}
+library(ggthemes)
+library(dplyr)
+library(ggplot2)
+```
+
+The simplest way to understand the difference in usage of these terms is to just calculate the relative frequency in which these terms are occurring within a particular novel. Relative frequency gives us a solid idea about the difference in usage of these terms in terms of the relative quantity in which these terms occur throughout our corpus.
+
+```{r}
+all_authors_frequency <- all_authors_tagged %>%
+  group_by(title) %>%
+  add_count(name = "length") %>%
+  mutate(upper_class_count = sum(upper_class , na.rm = TRUE)) %>%
+  mutate(rfreqUC = upper_class_count / length) %>%
+  mutate(lower_class_count = sum(lower_class , na.rm = TRUE)) %>%
+  mutate(rfreqLC = lower_class_count / length) %>%
+  select(genre , author , title , rfreqUC , rfreqLC) %>%
+  distinct()
+```
+
+The value of the relative frequency of these terms is a continuous variable and so a histogram has been used to graphically represent the relative usage of these terms. The x-axis of the histogram denotes the value of relative frequency of the usage of a particular term group and the y-axis indicates the count or the number of novels in which that relative frequency value occurs.
+
+```{r}
+all_authors_frequency %>%
+  ggplot(aes(rfreqUC)) +
+  geom_histogram()
+all_authors_frequency %>%
+  ggplot(aes(rfreqLC)) +
+  geom_histogram()
+```
+## Some Problems with using a histogram
+
+The x-axis represents the value of relative frequency, which means that the relative frequency value increases the further right you move along the x-axis.
+
+Instead of a normal distribution, we will see a positively skewed histogram with a long tail. We can just use some basic logic to understand why this happens:
+
+A higher relative frequency in most cases would yield to a lower count, this is because if we just think about it, it is much much easier to find a higher number of lower relative frequency in a corpus simply because a lower relative frequency means a weaker relation and a weak relation is much more easier to occur than a stronger relation in the case of a high relative frequency (I don't know if this made any sense, but it makes sense to me).
+
+Therefore, we will almost always see the graph to be skewed to the left and having a long short tail (if any).
+
+
+```{r}
+all_authors_frequency %>%
+  ggplot(aes(rfreqUC , fill = genre))  +
+  geom_histogram()
+all_authors_frequency %>%
+  ggplot(aes(rfreqLC , fill = genre)) +
+  geom_histogram()
+```
+```{r}
+all_authors_frequency %>%
+  ggplot(aes(rfreqUC, fill = genre)) + 
+  geom_histogram(color = "black",
+                 alpha = .5,
+                 position = "identity") +
+  facet_wrap(~genre) +
+   labs(title = "Upper Class Terms" , y = "count" , x = "Relative Frequency") +
+  theme_solarized()
+all_authors_frequency %>%
+  ggplot(aes(rfreqLC, fill = genre)) +
+  geom_histogram(color = "black",
+                 alpha = .5,
+                 position = "identity") +
+  facet_wrap(~genre) + 
+  labs(title = "Lower Class Terms" , y = "count" , x = "Relative Frequency") +
+  theme_solarized()
+```
+## Some Observations
+
+Upon first glance it is really easy to notice that the non science fiction corpus when searched for terms relating to the upper-class shows the majority of the texts conforming to a low relative frequency. When looking at the science fiction corpus, we can see that apart from the leftward skewed peak, it has a long tail wherein we see multiple texts where a higher relative frequency is matched for the upper-class terms. Based on just this we can infer that the texts in our science fiction corpus use terms relating to the upper-class relatively more than the texts in the non science fiction corpus.
+
+Things are not so clear when we look at the graph showing the relative frequency of usage of upper-class terms in both the corpora. In the non science fiction corpus, we see a very balanced and normal distribution among all the texts, suggesting that the lower-class terms play a consistent role throughout the texts in this corpus.
+
+At first glance, the science fiction corpus seems to be very similar (in terms of normal distribution of terms) and suggests that there is once again a consistent usage of lower-class terms in the texts, however it isn't necessary to infer this.
+
+But wait, there's more!
+
+Look at the scales in both the graphs, in particular the values along the x-axis the values along the x-axis in the lower-class graph are very small as compared to the values in the upper-class graph. 
+
+What does this mean?
+
+This simply means that there exists a higher absolute number of upper-class terms as compared to lower-class terms in both the corpora.
+
+And with this we can conclude that the usage of upper-class terms is relatively more frequent in science fiction texts as compared to the non science fiction texts, however when it comes to the usage of lower-class terms, the absolute number of the occurrences of these terms is relatively fewer yet consistent throughout both the corpora.
+
+
+# Data Visualization 2 - Sentiment Analysis:
+
+## Why Sentiment Analysis
+
+Our initial plan was to take the term lexicons and try to figure out the sentiment related to these terms to understand the context in which these terms are being used in the texts.
+
+## Did it work
+
+Nope -_-
+
+## Why?
+
+The tools and packages that we have used for sentiment analysis in R are, so far, are unfortunately not advanced enough to make our plan work. The 'bing' lexicon that we used just assigns a positive or negative sentiment to particular words. This highlights a big limitation of sentiment analysis in general. Taking these words at face value and assigning a positive or negative value doesn't give space for context or tone, which is extremely important in this field of work.
+
+What happened here was that the terms related to the lower-class are inherently negative in this directory and so the overall sentiment relating to these terms is 'negative'. Similarly, the terms related to the upper-class are inherently 'positive' according to this directory and so the overall sentiment that we get from both the corpora is positive for upper-class terms. This just gave a skewed analysis of the classes that the dictionary considered to be positive or negative. Rather than analyzing the sentiment that was expressed regarding these classes, a direct judgement of lower class as negative and upper class as positive was done (technology reflecting the binaric and capitalistic nature of human society, a whole other report yet again).
+
+
+```{r}
+all_authors_sentence <- all_authors %>%
+  group_by(author, genre , title , text) %>%
+  summarise (text = paste(text)) %>%
+  unnest_regex(sentences, text, pattern = "[.?!]", to_lower = FALSE)  
+```
+
+```{r}
+author_sentence_nr <- all_authors_sentence %>%
+  ungroup() %>%
+  mutate(sentence_number = row_number()) %>%
+  group_by(author, genre , title , sentence_number) %>%
+  unnest_tokens(word, sentences) %>%
+  anti_join(stop_words)
+```
+
+```{r}
+author_concept <-  author_sentence_nr %>%
+  left_join(upper_class_df) %>%
+  left_join(lower_class_df) 
+```
+
+```{r}
+author_concept_sentiment <- author_concept %>%
+  inner_join(get_sentiments("bing"))
+```
+
+```{r}
+author_sentiment_total <- author_concept_sentiment %>%
+  count(sentence_number, sentiment) %>%
+  pivot_wider(names_from = sentiment,
+              values_from = n,
+              values_fill = 0)  %>%
+  mutate(sentiment = positive - negative) %>%
+  left_join(author_concept) %>%
+  filter(upper_class == TRUE | lower_class == TRUE)
+```
+
+```{r}
+author_sentiment_table <- author_sentiment_total %>%
+  pivot_longer(upper_class:lower_class,
+               names_to = "concept",
+               values_to = "total_sentiment")  %>%
+  drop_na() %>%
+  group_by(genre, author, concept) %>%
+  summarise (total = sum(sentiment)) %>%
+  ungroup()
+```
+
+```{r}
+author_sentiment_table %>%
+  ggplot(aes(author, y = total, fill = genre)) +
+  geom_col(color = "black",
+           alpha = .7,
+           position = "identity") +
+  facet_wrap(~ concept) +
+  labs(title = "Positive and Negative Sentiment by Terms",
+       x = "Overal Sentiment",
+       y = "Author",
+       fill = "Genre") +
+  coord_flip() 
+```
+
+
+# Conclusion:
+
+So, what are we left with?
+
+Our first tool seems to provide reliable data that supports our hypothesis. Our second tool was, unfortunately, inconclusive.
+
+The data collected seems supportive of our hypothesis. There is enough data to support the presence of some kind of pattern, warranting more data analysis.
+
+
+# Reflections:
+
+This project was much easier to go about, even if it felt a lot more complicated and intensive in the technical department. The Voyant project may have been easier to implement, but the data it produced was not easy to interpret and at times produced promising information that turned out to be confounding and therefore needed to be discarded.
+
+RStudio, as mentioned, requires a little more technical know-how, but being able to navigate it means the researcher has so many more options to manipulate and interact with the data. Also, the volume of data that can be meaningfully analysed is much larger. RStudio is an amazing tool, but it could be made easier to use for individuals that aren't familiar with computer programming and coding.
