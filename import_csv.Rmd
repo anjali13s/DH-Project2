@@ -111,11 +111,11 @@ tidy_all_authors <- all_authors %>%
 
 
 ```{r adding_class}
-upper_class_words <- c("king", "bourgeoisie", "wealthy", "rich", "noble", "aristocratic", "elite", "well-off", "blue-blood", "imperial", "posh", "upmarket", "exclusive", "high society", "privileged", "gentry", "mansion" , "prince" , "lady" , "queen" , "sir" , "madam" , "ma'am" )
+upper_class_words <- c("king", "wealthy", "rich", "noble", "aristocratic", "elite", "well-off", "blue-blood", "imperial", "posh", "upmarket", "exclusive", "high society", "privileged", "gentry", "mansion" , "prince" , "lady" , "queen" , "sir" , "madam" , "ma'am" )
 
 upper_class_df <- data_frame(word = upper_class_words, upper_class = TRUE)
 
-lower_class_words <- c("village", "poor", "beggar", "penniless", "poverty", "broke", "destitute", "bankrupt", "empty-handed", "needy" )
+lower_class_words <- c("village", "poor", "beggar", "penniless", "poverty", "broke", "destitute", "bankrupt", "empty-handed", "needy" , "peasant" , "baseborn" , "commoner" , "ignoble" , "inferior" , "vulgar" , "illiterate" , "lowborn" )
 
 lower_class_df <- data_frame(word = lower_class_words, lower_class = TRUE)
 
