@@ -1,3 +1,9 @@
+## Cleaning and Modelling Data
+
+The foundation of any sort of analysis starts with the initial data we have and having uniform datasets without unnecessary things that will skew our analysis is the most important part. Our base data were pre-cleaned corpora containing text files that we used for project 1. Redoing the entire downloading process from Gutenberg was something we really did not want to do, so we took the easy way out and decided to convert these text files into csv files, grouped by authors. For this step, instead of using R codes, the data querying tool in Excel was used to make the magic happen. Each folder filled with text files were loaded in, some tweaking and playing around was done and voilà, we've got our data in clean csv files with 3 colums - title, author and text.
+
+The next step was to remove unnecessary characters. This was done by the str_replace_all command and any texts other than alphanumeric characters were removed. We still found some extra characters such as 'â' and 'œ' (a tiny issue that comes with the usage of Excel and its tendency to change unknown characters into even more absurd characters) and they were promptly removed as well. These texts were now imported into a new file. Then came the part where we had to add in the differentitation between science fiction and non science fiction. Wells' and Doyle's texts were added into one file whereas Eliot's and Hardy's were added into another. Then we operationalized class by adding in words relating to upper class and lower class. With that we were able to effectively clean and model the data to fit into our hypothesis
+
 ## Installing libraries
 
 ```{r echo=TRUE, results='hide', message=FALSE}
@@ -118,10 +124,6 @@ upper_class_df <- data_frame(word = upper_class_words, upper_class = TRUE)
 lower_class_words <- c("village", "poor", "beggar", "penniless", "poverty", "broke", "destitute", "bankrupt", "empty-handed", "needy")
 
 lower_class_df <- data_frame(word = lower_class_words, lower_class = TRUE)
-
-technology_words <- c("science", "technology", "rational", "rationality","thinking","progress")
-
-technology_df <- data_frame(word = technology_words, technology = TRUE)
 ```
 
 We can add these words by using a left_join. A left join will keep everything on left hand side 
@@ -129,10 +131,8 @@ We can add these words by using a left_join. A left join will keep everything on
 ```{r tagged_words}
 all_authors_tagged <- tidy_all_authors %>% 
                                 left_join(upper_class_df) %>% 
-                                left_join(lower_class_df) %>% 
-                                left_join(technology_df)
-
-
+                                left_join(lower_class_df)
+              
 ```
 
 We can then establish some basic percentages for the use of each word.
