@@ -2,6 +2,20 @@
 title: "R Notebook"
 output: html_notebook
 ---
+# Second Visulaisation - Sentiment Analysis 
+
+## Why Sentiment Analysis
+
+Our initial plan was to take the term lexicons and try to figure out the sentiment related to these terms to understand the context in which these terms are being used in the texts.
+
+## Did it work
+
+Nope -_-
+
+## Why?
+
+The tools and packages that we have learned to use for sentiment analysis so far are unfortunately not advanced enough to make our plan work. the "bing" directory that we used just assigns a positive or negative sentiment to particuklar words.
+What (we think) happened was that the terms related to the lower class are inherently negative in this directory and so the overall sentiment relating to these terms is 'negative'. Similarly, the terms related to the upper class are inherently 'positive' according to this directory and so the overall sentiment that we get from both the corpora is positve for upper class terms
 
 ```{r}
 all_authors$text[300:310]
