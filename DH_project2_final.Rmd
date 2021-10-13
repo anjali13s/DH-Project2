@@ -1,11 +1,12 @@
 ---
 title: "Class and Sci-fi Through Some Hi-fi Tools"
-author: Anjali Sajith, Harieshwar Vetri, Mantegh Anand
+author: "Anjali Sajith , Harieshwar Vetri, Mantegh Anand"
 output:
-  html_notebook:
-    toc: true
-    toc_depth: 7 
+  html_document:
     df_print: paged
+    toc: TRUE
+    toc_float: TRUE
+    toc_depth: 7
 ---
 ![](https://www.ashoka.edu.in/admin_assets/global/images/logo/logo-ashoka.png)
 
